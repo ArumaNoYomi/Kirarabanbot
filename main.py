@@ -4,6 +4,8 @@ from aiogram.types import ReplyKeyboardRemove, \
     ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton
 
+database = {}
+
 bot = Bot(token=BOT_API)
 dp = Dispatcher(bot)
 
@@ -30,27 +32,16 @@ async def check2(message: types.Message):
 
     await message.reply(f'Проголосовать за бан этого пидораса {pidor_fullname} ?', reply_markup=buttons)
 
-    @dp.callback_query_handler(lambda c: 'Yes' in c.data)
-    async def process_callback_buttonyes(callback_query: types.CallbackQuery):
-        pidor_fullname = callback_query.data.split(".")[1]
-        if process_callback_buttonyes == process_callback_buttonyes:
-            await callback_query.message.edit_text(f'Проголосовать за бан этого пидораса {pidor_fullname} ? 1 человек проголосовал!', reply_markup=buttons)
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-executor.start_polling(dp, skip_updates=True)
+@dp.callback_query_handler(lambda c: 'Yes' in c.data)
+async def process_callback_buttonyes(callback_query: types.CallbackQuery):
+    pidor_fullname = callback_query.data.split(".")[1]
+    # await callback_query.message.edit_text(f'Проголосовать за бан этого пидораса {pidor_fullname} ? 1 человек проголосовал!', reply_markup=buttons)
+    if (callback_query.message.chat.id, callback_query.message.message_id) in database:
+        database[(callback_query.message.chat.id, callback_query.message.message_id)].add(callback_query.from_user.id)
+    else:
+        database[(callback_query.message.chat.id, callback_query.message.message_id)] = set([callback_query.from_user.id])
+    await callback_query.answer()
+    for key in database:
+        counter = (len(database[key]))
+#        if counter == 7:
+#           await
